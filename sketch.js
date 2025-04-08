@@ -179,7 +179,7 @@ function draw() {
     text(totalSteps, canvasSize * 0.85, canvasSize * 0.9);
 }
 function saveCanvasImage() {
-    saveCanvas(canvas, 'myHighQualityImage', 'png');
+    saveCanvas(canvas, 'srinagar-to-leh', 'png');
 }
 window.addEventListener("DOMContentLoaded", async () => {
     totalSteps = (await getTotalSteps());
