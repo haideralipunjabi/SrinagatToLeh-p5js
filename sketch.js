@@ -112,46 +112,38 @@ function centerCanvas() {
     canvas.position(x, y);
 }
 
-function drawTeamPlot(teamName, samplePoints) {
-    let progress = teamData[teamName] / goal;
+function drawTeamPlot1(teamName, samplePoints) {
+
     let teamColor = color(...teamConsts[teamName]["color"]);
-    console.log(teamColor)
-    if (progress > 2) {
-        progress = 2;
-    }
-    let progress2 = 0;
-    if (progress > 1.0) {
-        progress2 = progress - 1;
-        progress = 1;
-    }
-    let progressCount = floor(progress * samplePoints.length);
-    let progressCount2 = floor(progress2 * samplePoints.length);
-
-
-    console.log(samplePoints.length);
 
     stroke(teamColor);
     strokeWeight(strokeWeightSize);
     noFill();
     beginShape();
-    for (let i = 0; i < progressCount; i++) {
+    for (let i = 0; i < teamData[teamName]["progressCount"]; i++) {
         let pt = samplePoints[i];
         vertex(pt.x, pt.y);
     }
     endShape();
+}
+function drawTeamPlot2(teamName, samplePoints) {
+    let teamColor = color(...teamConsts[teamName]["color"]);
+    stroke(teamColor);
+    strokeWeight(strokeWeightSize);
+    noFill();
 
     beginShape();
-    for (let i = 0; i < progressCount2; i++) {
+    for (let i = 0; i < teamData[teamName]["progressCount2"]; i++) {
         let pt = samplePoints[samplePoints.length - 1 - i];
         vertex(pt.x, pt.y);
     }
-    lastPoint = samplePoints[progressCount];
-    if (progress2 != 0) {
-        lastPoint = samplePoints[samplePoints.length - 1 - progressCount2];
-    }
+    endShape();
+}
+
+function drawLogos(teamName, samplePoints) {
+    lastPoint = teamData[teamName]["lastPoint"];
     image(teamConsts[teamName]["image"], lastPoint.x - (canvasSize / 30), lastPoint.y - (canvasSize / 30), canvasSize / 15, canvasSize / 15,);
 
-    endShape();
 }
 
 function draw() {
@@ -164,7 +156,7 @@ function draw() {
     let p2 = createVector(canvasSize * 0.2, canvasSize * 0.5);
     let p3 = createVector(canvasSize * 0.8, canvasSize * 0.4);
     let p4 = createVector(canvasSize * 0.4, canvasSize * 0.2);
-    let p5 = createVector(canvasSize * 0.9, canvasSize * 0.18);
+    let p5 = createVector(canvasSize * 0.8, canvasSize * 0.18);
 
     pts = [p0, p1, p2, p3, p4, p5];
 
@@ -199,7 +191,42 @@ function draw() {
     samplePoints.push(pts[pts.length - 1]);
 
     for (team of Object.keys(teamData)) {
-        drawTeamPlot(team, samplePoints)
+        let steps = teamData[team];
+        let progress = teamData[team] / goal;
+        if (progress > 2) {
+            progress = 2;
+        }
+        let progress2 = 0;
+        if (progress > 1.0) {
+            progress2 = progress - 1;
+            progress = 1;
+        }
+        let progressCount = floor(progress * samplePoints.length);
+        let progressCount2 = floor(progress2 * samplePoints.length);
+        lastPoint = samplePoints[progressCount];
+        if (progress2 != 0) {
+            lastPoint = samplePoints[samplePoints.length - 1 - progressCount2];
+        }
+        teamData[team] = {
+            "steps": steps,
+            "progress": progress,
+            "progress2": progress2,
+            "progressCount": progressCount,
+            "progressCount2": progressCount2,
+            "lastPoint": lastPoint
+        }
+    }
+
+    for (team of Object.keys(teamData)) {
+        drawTeamPlot1(team, samplePoints)
+    }
+
+    for (team of Object.keys(teamData)) {
+        drawTeamPlot2(team, samplePoints)
+    }
+
+    for (team of Object.keys(teamData)) {
+        drawLogos(team, samplePoints)
     }
 
     fill(248, 155, 53);
@@ -211,7 +238,7 @@ function draw() {
         createVector(-canvasSize * 0.15, -canvasSize * 0.1),
         createVector(canvasSize * 0.01, -canvasSize * 0.1),
         createVector(-canvasSize * 0.15, -canvasSize * 0.1),
-        createVector(-canvasSize * 0.1, -canvasSize * 0.1),
+        createVector(-canvasSize * 0, -canvasSize * 0.1),
     ]
     for (let i = 0; i < pts.length; i++) {
         image(images[i], pts[i].x + offsets[i].x, pts[i].y + offsets[i].y, canvasSize / 7, canvasSize / 7);
